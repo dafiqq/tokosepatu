@@ -23,7 +23,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
 
 
-                        <section class="bg-center bg-no-repeat bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/conference.jpg')] bg-gray-700 bg-blend-multiply min-h-screen">
+                        <section class="bg-center bg-no-repeat bg-[url('/toko.jpg')] bg-cover bg-gray-700 bg-blend-multiply min-h-screen">
     <div class="px-4 mx-auto max-w-screen-xl text-center py-24 lg:py-56">
         <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white md:text-5xl lg:text-6xl">Moro Seneng Jaya</h1>
         <p class="mb-8 text-lg font-normal text-gray-300 lg:text-xl sm:px-16 lg:px-48">Menyediakan Sepatu Brand Favorit Anda.</p>
@@ -54,8 +54,10 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 )}
                             </nav>
                         </header>
-</section>
-
+                    </section>
+                    <footer class="bg-white-800 text-black py-8 text-center">
+                <p>&copy; 2024 Moro Seneng. All rights reserved.</p>
+            </footer>
                     </div>
         </>
     );

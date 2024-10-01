@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\AboutController;
+use App\Http\Controllers\HelpController;
+use App\Http\Controllers\KeranjangController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +29,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/catalog',[CatalogController::class,'index'])->name('catalog.index');
+Route::get('/catalog',[ProductController::class,'index'])->name('catalog.index');
+Route::get('/about',[AboutController::class,'index'])->name('about.index');
+Route::get('/help',[HelpController::class,'index'])->name('help.index');
+Route::get('/keranjang',[KeranjangController::class,'index'])->name('keranjang.index');
+Route::post('/keranjang/store', [KeranjangController::class, 'store'])->name('keranjang.store');
 
 require __DIR__.'/auth.php';
