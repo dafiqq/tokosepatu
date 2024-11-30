@@ -24,13 +24,13 @@ export default function Catalog({ products }) {
                 [product.id]: true
             }));
 
+            // Mengirim permintaan ke backend
             const response = await axios.post('/keranjang/store', {
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                image: product.image,
-                quantity: 1, // Jumlah default produk yang ditambahkan
+                id: product.id, // Sesuaikan dengan backend yang membutuhkan 'id'
+                jumlah: 1, // Jumlah default produk yang ditambahkan
             });
+
+            console.log(response)
 
             alert(response.data.message); // Tampilkan pesan sukses
 

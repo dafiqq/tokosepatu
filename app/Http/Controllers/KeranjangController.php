@@ -3,29 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Keranjang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
-class keranjangController extends Controller
+class KeranjangController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        // Ambil data keranjang dari sesi
-        $keranjang = Session::get('keranjang', []);
-        $totalHarga = 0;
-
-        foreach ($keranjang as $item) {
-            $totalHarga += $item['price'] * $item['quantity'];
-        }
-
-        return Inertia::render('Keranjang', [
+        $keranjang = Keranjang::with('product')->where('user_id',Auth::id())->get();
+        $totalPrice = $keranjang->sum(function ($item) {
+        return $item->product->harga * $item->jumlah;
+    });
+        return Inertia::render('Keranjang',[
             'keranjang' => $keranjang,
-            'totalHarga' => $totalHarga
-        ]);
+            'totalPrice' => $totalPrice
+        ]);       
     }
 
     /**
@@ -33,33 +31,38 @@ class keranjangController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi data produk yang diterima
-        $validated = $request->validate([
-            'id' => 'required|integer',
-            'name' => 'required|string',
-            'price' => 'required|integer',
-            'image' => 'required|string',
-            'quantity' => 'required|integer|min:1',
+        // Validasi input
+        $request->validate([
+            'id' => 'required|exists:products,id',
+            'jumlah' => 'required|integer|min:1',
         ]);
 
-        // Ambil keranjang dari sesi
-        $keranjang = Session::get('keranjang', []);
+        // Mendapatkan user yang sedang login
+        $userId = Auth::id();
 
-        // Cek apakah produk sudah ada di keranjang
-        $productIndex = array_search($validated['id'], array_column($keranjang, 'id'));
+        // Mencari keranjang berdasarkan user dan barang
+        $keranjang = Keranjang::where('user_id', $userId)
+            ->where('product_id', $request->id)
+            ->first();
 
-        if ($productIndex !== false) {
-            // Jika produk sudah ada, tambahkan quantity
-            $keranjang[$productIndex]['quantity'] += $validated['quantity'];
+        // Jika keranjang sudah ada, perbarui jumlahnya
+        if ($keranjang) {
+            $keranjang->jumlah += $request->jumlah;
+            $keranjang->total_harga = $keranjang->jumlah * $keranjang->product->harga;
+            $keranjang->save();
         } else {
-            // Jika produk belum ada, tambahkan produk ke keranjang
-            $keranjang[] = $validated;
+            // Jika keranjang baru, buat entri baru
+            Keranjang::create([
+                'user_id' => $userId,
+                'product_id' => $request->id,
+                'jumlah' => $request->jumlah,
+                // 'total_harga' => $request->qty * $request->barang->harga,
+            ]);
         }
 
-        // Simpan kembali keranjang ke sesi
-        Session::put('keranjang', $keranjang);
-
-        return response()->json(['message' => 'Produk ditambahkan ke keranjang!'], 200);
+        return redirect()->back()->with([
+            'message' => 'Barang berhasil ditambahkan ke keranjang!',
+        ]);
     }
 
     /**
@@ -83,6 +86,15 @@ class keranjangController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $keranjang = Keranjang::where('id', $id)->where('user_id', Auth::id())->first();
+
+    // Jika item keranjang ditemukan, hapus item tersebut
+    if ($keranjang) {
+        $keranjang->delete();
+        return redirect()->back()->with('message', 'Item berhasil dihapus dari keranjang.');
+    }
+
+    // Jika item keranjang tidak ditemukan
+    return redirect()->back()->with('error', 'Item tidak ditemukan di keranjang.');
     }
 }

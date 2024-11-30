@@ -22,9 +22,24 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'image' => 'required|image|mimes:jpeg,jpg',
+        ]);
+    
+        // Simpan file gambar
+        $path = $request->file('image')->store('images', 'public');
+    
+        // Simpan produk ke database
+        Product::create([
+            'name' => $request->input('name'),
+            'price' => $request->input('price'),
+            'image' => $path,
+        ]);
+    
+        return back()->with('message', 'Barang berhasil ditambahkan');
     }
-
     /**
      * Display the specified resource.
      */

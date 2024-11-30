@@ -1,23 +1,49 @@
-import Checkbox from '@/Components/Checkbox';
-import GuestLayout from '@/Layouts/GuestLayout';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import GuestLayout from "@/Layouts/GuestLayout";
+import { Head, Link, router, useForm } from "@inertiajs/react";
+import { useState } from "react";
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        password: '',
+        email: "",
+        password: "",
         remember: false,
     });
+
+    const [emailWarning, setEmailWarning] = useState("");
+    const [passwordWarning, setPasswordWarning] = useState("");
 
     const submit = (e) => {
         e.preventDefault();
 
-        post(route('login'), {
-            onFinish: () => reset('password'),
+        // Validasi Email
+        if (data.email.length < 5 || data.email.length > 100) {
+            setEmailWarning(
+                "Email harus memiliki minimal 5 dan maksimal 100 karakter."
+            );
+            return;
+        } else if (!data.email.includes("@")) {
+            setEmailWarning(
+                "Email harus mengandung domain (contoh: @gmail.com)."
+            );
+            return;
+        } else {
+            setEmailWarning("");
+        }
+
+        // Validasi Password
+        if (data.password.length < 8) {
+            setPasswordWarning("Password harus memiliki minimal 8 karakter.");
+            return;
+        } else if (data.password.length > 20) {
+            setPasswordWarning("Password tidak boleh lebih dari 20 karakter.");
+            return;
+        } else {
+            setPasswordWarning("");
+        }
+
+        // Mengirim data jika semua validasi berhasil
+        post(route("login"), {
+            onFinish: () => reset("password"),
         });
     };
 
@@ -31,66 +57,6 @@ export default function Login({ status, canResetPassword }) {
                 </div>
             )}
 
-            {/* <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="block mt-4">
-                    <label className="flex items-center">
-                        <Checkbox
-                            name="remember"
-                            checked={data.remember}
-                            onChange={(e) => setData('remember', e.target.checked)}
-                        />
-                        <span className="ms-2 text-sm text-gray-600">Remember me</span>
-                    </label>
-                </div>
-
-                <div className="flex items-center justify-end mt-4">
-                    {canResetPassword && (
-                        <Link
-                            href={route('password.request')}
-                            className="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Forgot your password?
-                        </Link>
-                    )}
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
-                </div>
-            </form> */}
             <section class="bg-gray-50 dark:bg-gray-900">
                 <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
                     <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
@@ -99,9 +65,9 @@ export default function Login({ status, canResetPassword }) {
                             onClick={() => {
                                 router.get("/");
                             }}
-                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            class="text-white bg-gradient-to-r from-green-500 to-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                         >
-                            Kembali
+                            kembali
                         </button>
                         <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                             <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
@@ -130,6 +96,11 @@ export default function Login({ status, canResetPassword }) {
                                         placeholder="name@company.com"
                                         required=""
                                     />
+                                    {emailWarning && (
+                                        <p className="text-red-500 text-sm mt-2">
+                                            {emailWarning}
+                                        </p>
+                                    )}
                                 </div>
                                 <div>
                                     <label
@@ -150,6 +121,11 @@ export default function Login({ status, canResetPassword }) {
                                         class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         required=""
                                     />
+                                    {passwordWarning && (
+                                        <p className="text-red-500 text-sm mt-2">
+                                            {passwordWarning}
+                                        </p>
+                                    )}
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-start">
@@ -159,7 +135,6 @@ export default function Login({ status, canResetPassword }) {
                                                 aria-describedby="remember"
                                                 type="checkbox"
                                                 class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                                                required=""
                                             />
                                         </div>
                                         <div class="ml-3 text-sm">
@@ -173,17 +148,14 @@ export default function Login({ status, canResetPassword }) {
                                     </div>
                                     <a
                                         href={route("password.request")}
-                                        class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
+                                        class="text-sm font-medium text-teal-700 hover:underline dark:text-primary-500"
                                     >
                                         Forgot password?
                                     </a>
                                 </div>
                                 <button
                                     type="submit"
-                                    // onClick={() => {
-                                    //     submit;
-                                    // }}
-                                    class="w-full text-black bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                                    class="w-full text-white bg-gradient-to-r from-green-500 to-teal-600 hover:bg-teal-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                                 >
                                     Sign in
                                 </button>
@@ -194,7 +166,7 @@ export default function Login({ status, canResetPassword }) {
                                         onClick={() => {
                                             router.get(route("register"));
                                         }}
-                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                        class="text-white bg-gradient-to-r from-green-500 to-teal-600 hover:bg-teal-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                                     >
                                         Register
                                     </button>
